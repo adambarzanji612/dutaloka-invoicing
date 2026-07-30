@@ -215,6 +215,73 @@
     font-family:'Georgia', serif;
   }
   .mini-btn:hover{ background: var(--teal); color:#fff; }
+  .mini-btn.danger{ border-color:#b03030; color:#b03030; }
+  .mini-btn.danger:hover{ background:#b03030; color:#fff; }
+  .row-actions{ display:flex; gap:6px; flex-wrap:nowrap; }
+
+  /* ---------- SUPPLIER BLOCKS (Pengeluaran form) ---------- */
+  .supplier-block{
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:14px 16px;
+    margin-bottom:14px;
+    background:#fffefc;
+  }
+  .supplier-block-head{
+    display:flex; gap:10px; align-items:center;
+    margin-bottom:12px;
+  }
+  .supplier-block-head .sup-nama{
+    flex:1;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:'Georgia', serif;
+    font-size:14px;
+    background:#fffefb;
+  }
+  .supplier-block .field{ margin-bottom:10px; }
+  .sup-items{ margin:10px 0; display:flex; flex-direction:column; gap:8px; }
+  .expense-item-row{
+    display:flex; gap:8px; align-items:center;
+  }
+  .expense-item-row .item-biaya{
+    width:140px; flex-shrink:0;
+    padding:8px 9px; border:1px solid var(--line); border-radius:3px;
+    font-family:'Georgia', serif; font-size:13px; background:#fffefb;
+  }
+  .expense-item-row .item-ket{
+    flex:1;
+    padding:8px 9px; border:1px solid var(--line); border-radius:3px;
+    font-family:'Georgia', serif; font-size:13px; background:#fffefb;
+  }
+  .expense-item-row .item-remove{
+    flex-shrink:0;
+    width:26px; height:26px;
+    border:1px solid #b03030; color:#b03030; background:#fff;
+    border-radius:50%; cursor:pointer; font-size:12px; line-height:1;
+  }
+  .expense-item-row .item-remove:hover{ background:#b03030; color:#fff; }
+
+  /* ---------- SUPPLIER PREVIEW (Pengeluaran modal) ---------- */
+  .supplier-preview-block{
+    border:1px solid var(--line);
+    border-left:3px solid var(--teal);
+    border-radius:4px;
+    padding:10px 14px;
+    margin-bottom:10px;
+    background:#f9fbfc;
+  }
+  .supplier-preview-head{
+    display:flex; justify-content:space-between; font-weight:bold;
+    font-size:13px; color:var(--navy-deep); margin-bottom:6px;
+  }
+  .supplier-preview-item{
+    display:flex; justify-content:space-between;
+    font-size:12.5px; color:var(--muted); padding:3px 0;
+  }
+  .supplier-preview-item.muted{ font-style:italic; }
 
   /* toggle switch for "receipt terkirim" */
   .switch{ position:relative; display:inline-block; width:40px; height:22px; }
@@ -578,10 +645,33 @@
   }
   table.trip th:last-child{ text-align:right; }
   table.trip th.qty-col, table.trip td.qty-col{ text-align:center; width:60px; }
+  table.trip th.unit-col, table.trip td.unit-col{ text-align:right; white-space:nowrap; }
   table.trip td{
     padding:10px 10px; border-bottom:1px solid var(--line);
   }
   table.trip td:last-child{ text-align:right; font-weight:bold; }
+
+  .bank-info{
+    margin-top: 18px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--teal);
+    border-radius: 3px;
+    padding: 14px 18px;
+    background: #f7fbfd;
+  }
+  .bank-info-title{
+    font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+    color: var(--teal); font-weight:bold; margin-bottom:10px;
+  }
+  .bank-info-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:6px 24px;
+    font-size:13px;
+  }
+  .bank-info-grid div{ display:flex; justify-content:space-between; gap:10px; }
+  .bank-info-grid .k{ color:var(--muted); }
+  .bank-info-grid .v{ font-weight:bold; color:var(--ink); text-align:right; }
 
   .total-box{
     margin-top: 10px;
@@ -714,6 +804,7 @@
     .doc-title h4{ font-size:20px; }
 
     .meta-grid{ grid-template-columns:1fr; gap:2px; }
+    .bank-info-grid{ grid-template-columns:1fr; }
     .meta-row{ flex-wrap:wrap; }
 
     /* Invoice/Receipt item table: allow horizontal scroll instead of squeezing */
@@ -875,6 +966,33 @@
     </div>
   </div>
 
+  <!-- ===================== MODAL: PREVIEW PENGELUARAN ===================== -->
+  <div class="modal-overlay" id="expenseModalOverlay" onclick="if(event.target===this) closeExpensePreview()">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Detail Pengeluaran</h3>
+        <button class="modal-close" onclick="closeExpensePreview()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="meta-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="meta-row"><span class="k">No Invoice</span><span class="v" id="em-noInvoice">-</span></div>
+          <div class="meta-row"><span class="k">Nama Client</span><span class="v" id="em-client">-</span></div>
+          <div class="meta-row"><span class="k">Harga Jual</span><span class="v" id="em-hargaJual">Rp 0</span></div>
+          <div class="meta-row"><span class="k">Total Modal</span><span class="v" id="em-totalModal">Rp 0</span></div>
+          <div class="meta-row"><span class="k">Margin</span><span class="v" id="em-margin" style="font-weight:bold;">Rp 0</span></div>
+        </div>
+        <div style="margin-top:18px;">
+          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:8px; letter-spacing:0.4px;">Rincian Supplier</label>
+          <div id="em-supplierList"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-gagal" onclick="deleteExpenseFromPreview()">🗑 Hapus</button>
+        <button class="btn-confirmed" onclick="editExpenseFromPreview()">✎ Edit Pengeluaran</button>
+      </div>
+    </div>
+  </div>
+
 
 <!-- ===================== SECTION: REQUEST FORM ===================== -->
 <div class="app" id="section-request-form">
@@ -976,6 +1094,11 @@
         <textarea id="reqResponClient" placeholder="Catat respon, pertanyaan, atau feedback dari calon client di sini..."></textarea>
       </div>
 
+      <div class="save-msg" id="reqEditBanner" style="display:none; background:#fff3d6; color:#a97a1d;">
+        ✎ Mode Edit: <b id="reqEditingLabel"></b>
+        <button type="button" class="mini-btn" style="margin-left:10px;" onclick="cancelEditRequest()">Batal Edit</button>
+      </div>
+
       <div class="actions">
         <button class="btn-invoice" style="flex:1;" onclick="submitRequestForm()">💾 Simpan Request</button>
       </div>
@@ -1029,10 +1152,11 @@
           <th>Sales</th>
           <th>Status Penawaran</th>
           <th>Status Request</th>
+          <th>Aksi</th>
         </tr>
       </thead>
       <tbody id="requestListBody">
-        <tr class="empty-row"><td colspan="10">Belum ada request yang tersimpan.</td></tr>
+        <tr class="empty-row"><td colspan="11">Belum ada request yang tersimpan.</td></tr>
       </tbody>
     </table>
   </div>
@@ -1084,6 +1208,13 @@
           <span class="ic">🎫</span>
           <span class="lb">Tiket</span>
         </label>
+      </div>
+
+      <div class="row2" id="field-visa" style="display:none;">
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Jenis Visa</label>
+          <input type="text" id="jenisVisa" placeholder="Contoh: Visa Turis, Visa Bisnis, Visa Schengen">
+        </div>
       </div>
 
       <div class="row2" id="field-maskapai" style="display:none;">
@@ -1212,6 +1343,7 @@
               <th>Deskripsi Layanan</th>
               <th>Keterangan</th>
               <th class="qty-col">Qty</th>
+              <th class="unit-col">Harga Satuan</th>
               <th>Jumlah</th>
             </tr>
           </thead>
@@ -1220,28 +1352,35 @@
               <td>Destinasi</td>
               <td id="inv-destinasi">-</td>
               <td class="qty-col">—</td>
-              <td>1 paket</td>
-            </tr>
-            <tr>
-              <td>Tanggal Keberangkatan</td>
-              <td id="inv-berangkat">-</td>
-              <td class="qty-col">—</td>
+              <td class="unit-col">—</td>
               <td>—</td>
             </tr>
             <tr id="inv-row-pulang">
               <td>Tanggal Kepulangan</td>
               <td id="inv-pulang">-</td>
               <td class="qty-col">—</td>
+              <td class="unit-col">—</td>
               <td>—</td>
             </tr>
             <tr>
-              <td id="inv-produkLine">Paket Tour (<span id="inv-pax2">-</span> pax)</td>
+              <td id="inv-produkLine">Paket Tour</td>
               <td id="inv-produkKeterangan">Sesuai kesepakatan</td>
               <td class="qty-col" id="inv-qty">-</td>
+              <td class="unit-col" id="inv-hargaSatuan">Rp 0</td>
               <td id="inv-harga">Rp 0</td>
             </tr>
           </tbody>
         </table>
+
+        <div class="bank-info">
+          <div class="bank-info-title">Rekening Perusahaan</div>
+          <div class="bank-info-grid">
+            <div><span class="k">Bank</span><span class="v">Bank Mandiri</span></div>
+            <div><span class="k">Atas Nama</span><span class="v">PT Middex Dutaloka Adikarsa</span></div>
+            <div><span class="k">Jenis Rekening</span><span class="v">Rupiah Account</span></div>
+            <div><span class="k">No. Rekening</span><span class="v">1570011625176</span></div>
+          </div>
+        </div>
 
         <div class="total-box">
           <div class="inner">
@@ -1252,17 +1391,6 @@
 
         <div class="footer-note">
           Invoice ini merupakan bukti tagihan resmi dari Dutaloka Tourism. Mohon melakukan pembayaran sesuai jumlah dan batas waktu yang telah disepakati bersama sales representative Anda.
-        </div>
-
-        <div class="sign-block">
-          <div class="sign">
-            <div class="line">Client</div>
-            <div class="role">Penerima Invoice</div>
-          </div>
-          <div class="sign">
-            <div class="line" id="inv-sales2">-</div>
-            <div class="role">Sales Representative</div>
-          </div>
         </div>
       </div>
 
@@ -1420,45 +1548,23 @@
         <input type="text" id="expenseClient" disabled placeholder="Otomatis dari invoice terpilih">
       </div>
 
-      <div class="field">
-        <label>Nama Supplier</label>
-        <input type="text" id="expenseSupplier" placeholder="Nama supplier / vendor">
-      </div>
-
-      <div class="row2">
-        <div class="field">
-          <label>Modal (IDR)</label>
-          <input type="number" id="expenseModal" min="0" placeholder="0">
-        </div>
-        <div class="field">
-          <label>Margin (IDR)</label>
-          <input type="number" id="expenseMargin" min="0" placeholder="0">
-        </div>
-      </div>
-
-      <div class="row2">
-        <div class="field">
-          <label>Biaya Akomodasi (IDR)</label>
-          <input type="number" id="expenseAkomodasi" min="0" placeholder="0">
-        </div>
-        <div class="field">
-          <label>Biaya Lainnya (IDR)</label>
-          <input type="number" id="expenseLainnya" min="0" placeholder="0">
-        </div>
-      </div>
+      <div id="supplierListContainer"></div>
 
       <div class="actions">
+        <button class="mini-btn" style="flex:1;" onclick="addSupplierBlock()">+ Tambah Supplier</button>
+      </div>
+      <div class="actions" style="margin-top:10px;">
         <button class="btn-invoice" style="flex:1;" onclick="saveExpenseEntry()">💾 Simpan Pengeluaran</button>
       </div>
-      <p class="hint">Data Nama Client, Produk, dan Harga Jual diambil otomatis dari invoice yang dipilih di atas.</p>
+      <p class="hint">Data Nama Client dan Harga Jual diambil otomatis dari invoice yang dipilih. Margin dihitung otomatis dari Harga Jual dikurangi total modal seluruh supplier.</p>
     </div>
 
     <div class="preview-wrap">
       <div class="paper" style="min-height:0; padding:28px;">
         <h4 class="display" style="margin:0 0 14px 0; color:var(--navy-deep);">Ringkasan Invoice Terpilih</h4>
-        <div id="expenseSummary" style="font-size:13px; color:var(--muted);">
-          Pilih invoice di sebelah kiri untuk melihat ringkasan harga jual dan estimasi keuntungan.
-        </div>
+        <div class="meta-row"><span class="k">Harga Jual</span><span class="v" id="expSummaryHargaJual">Rp 0</span></div>
+        <div class="meta-row"><span class="k">Total Modal</span><span class="v" id="expSummaryTotalModal">Rp 0</span></div>
+        <div class="meta-row"><span class="k">Margin</span><span class="v" id="expSummaryMargin" style="font-weight:bold;">Rp 0</span></div>
       </div>
     </div>
   </div>
@@ -1472,18 +1578,14 @@
         <tr>
           <th>No Invoice</th>
           <th>Client</th>
-          <th>Supplier</th>
-          <th>Modal</th>
-          <th>Margin</th>
-          <th>Akomodasi</th>
-          <th>Lainnya</th>
+          <th>Jml Supplier</th>
           <th>Total Modal</th>
           <th>Harga Jual</th>
-          <th>Estimasi Untung</th>
+          <th>Margin</th>
         </tr>
       </thead>
       <tbody id="expenseTableBody">
-        <tr class="empty-row"><td colspan="10">Belum ada data pengeluaran.</td></tr>
+        <tr class="empty-row"><td colspan="6">Belum ada data pengeluaran.</td></tr>
       </tbody>
     </table>
   </div>
@@ -1534,6 +1636,7 @@ const produkLabels = {
 };
 
 function toggleExtraFields(produkTipe){
+  document.getElementById('field-visa').style.display = (produkTipe === 'visa') ? 'grid' : 'none';
   document.getElementById('field-maskapai').style.display = (produkTipe === 'tiket') ? 'grid' : 'none';
   document.getElementById('field-transport').style.display = (produkTipe === 'transport') ? 'grid' : 'none';
 }
@@ -1551,6 +1654,7 @@ function syncData(){
   const hargaSatuan = Number(document.getElementById('harga').value) || 0;
   const sales = document.getElementById('namaSales').value || '-';
   const metode = document.getElementById('metodeBayar').value;
+  const jenisVisa = document.getElementById('jenisVisa').value.trim();
   const maskapai = document.getElementById('namaMaskapai').value.trim();
   const jenisTransport = document.getElementById('jenisTransport').value.trim();
 
@@ -1574,15 +1678,15 @@ function syncData(){
   const periode = (berangkat && pulang) ? `${fmtDate(berangkat)} — ${fmtDate(pulang)}` : '-';
   const subtotal = hargaSatuan * paxNum;
 
-  // Deskripsi layanan & keterangan per jenis produk (khusus invoice)
+  // Deskripsi layanan & keterangan per jenis produk (khusus invoice) — konsisten di semua produk
   let produkLineText = produkLabel;
   let produkKeterangan = 'Sesuai kesepakatan';
   if(produkTipe === 'tour'){
-    produkLineText = `${produkLabel} (${pax} pax)`;
+    produkLineText = produkLabel;
     produkKeterangan = 'Sesuai kesepakatan';
   } else if(produkTipe === 'visa'){
     produkLineText = produkLabel;
-    produkKeterangan = negaraDisplay;
+    produkKeterangan = jenisVisa ? `${jenisVisa} — ${negaraDisplay}` : negaraDisplay;
   } else if(produkTipe === 'transport'){
     produkLineText = produkLabel;
     produkKeterangan = jenisTransport || '-';
@@ -1590,11 +1694,6 @@ function syncData(){
     produkLineText = produkLabel;
     produkKeterangan = maskapai || '-';
   }
-
-  // Kolom Qty hanya tampil untuk Visa, Transport, Tiket
-  const showQty = (produkTipe === 'visa' || produkTipe === 'transport' || produkTipe === 'tiket');
-  document.querySelectorAll('#panel-invoice .qty-col').forEach(el => { el.style.display = showQty ? 'table-cell' : 'none'; });
-  document.querySelectorAll('#panel-receipt .qty-col').forEach(el => { el.style.display = showQty ? 'table-cell' : 'none'; });
 
   // Invoice
   document.getElementById('inv-no').textContent = 'No: ' + noInv;
@@ -1605,16 +1704,15 @@ function syncData(){
   document.getElementById('inv-pax').textContent = pax + ' orang';
   document.getElementById('inv-destinasi').textContent = destinasi;
   document.getElementById('inv-row-destinasi').style.display = (produkTipe === 'visa') ? 'none' : 'table-row';
-  document.getElementById('inv-berangkat').textContent = fmtDate(berangkat);
   document.getElementById('inv-pulang').textContent = fmtDate(pulang);
   document.getElementById('inv-row-pulang').style.display = pulang ? 'table-row' : 'none';
   document.getElementById('inv-produkLine').textContent = produkLineText;
   document.getElementById('inv-produkKeterangan').textContent = produkKeterangan;
   document.getElementById('inv-qty').textContent = pax;
+  document.getElementById('inv-hargaSatuan').textContent = fmtRupiah(hargaSatuan);
   document.getElementById('inv-harga').textContent = fmtRupiah(subtotal);
   document.getElementById('inv-subtotal').textContent = fmtRupiah(subtotal);
   document.getElementById('inv-total').textContent = fmtRupiah(subtotal);
-  document.getElementById('inv-sales2').textContent = sales;
 
   // Receipt — untuk Visa, keterangan cukup negara tujuan (sudah diwakili produkKeterangan)
   const recKeterangan = (produkTipe === 'visa') ? produkKeterangan : destinasi;
@@ -1643,7 +1741,7 @@ function syncData(){
     tglBerangkat: berangkat, tglPulang: pulang,
     hargaSatuan: hargaSatuan, subtotal: subtotal,
     namaSales: sales, metodeBayar: metode,
-    namaMaskapai: maskapai, jenisTransport: jenisTransport
+    namaMaskapai: maskapai, jenisTransport: jenisTransport, jenisVisa: jenisVisa
   };
 }
 
@@ -1681,13 +1779,12 @@ document.getElementById('app').addEventListener('input', syncData);
    hanya belum tersinkron online lewat Firestore.
    ===================================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyBNxt-dZzZeh0O-FnpxHUdo9hojQDA8RNQ",
-  authDomain: "dutaloka-invoicing.firebaseapp.com",
-  projectId: "dutaloka-invoicing",
-  storageBucket: "dutaloka-invoicing.firebasestorage.app",
-  messagingSenderId: "317691598375",
-  appId: "1:317691598375:web:3c6e28c96577a77ec42002",
-  measurementId: "G-DXBWVS69FS"
+  apiKey: "GANTI_DENGAN_API_KEY",
+  authDomain: "GANTI_DENGAN_PROJECT.firebaseapp.com",
+  projectId: "GANTI_DENGAN_PROJECT_ID",
+  storageBucket: "GANTI_DENGAN_PROJECT.appspot.com",
+  messagingSenderId: "GANTI_DENGAN_SENDER_ID",
+  appId: "GANTI_DENGAN_APP_ID"
 };
 
 let db = null;
@@ -1912,13 +2009,33 @@ function renderInvoiceListUI(){
           <span class="slider"></span>
         </label>
       </td>
-      <td style="text-align:center;"><button class="mini-btn" onclick="loadInvoiceIntoForm('${inv.noInvoice}')">Muat</button></td>
+      <td class="row-actions">
+        <button class="mini-btn" onclick="loadInvoiceIntoForm('${inv.noInvoice}')">✎ Edit</button>
+        <button class="mini-btn danger" onclick="deleteInvoiceEntry('${inv.noInvoice}')">🗑 Hapus</button>
+      </td>
     </tr>
   `).join('');
 }
 
 function capitalizeWord(s){
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+async function deleteInvoiceEntry(noInvoice){
+  if(!confirm(`Hapus invoice ${noInvoice}? Data pengeluaran terkait (jika ada) tidak ikut terhapus.`)) return;
+  if(firebaseReady){
+    try{
+      await db.collection('invoices').doc(noInvoice).delete();
+      return;
+    }catch(e){
+      console.warn('Gagal menghapus invoice di Firestore, fallback ke localStorage.', e);
+    }
+  }
+  const arr = lsGet(LS_KEY_INVOICES).filter(r => r.noInvoice !== noInvoice);
+  lsSet(LS_KEY_INVOICES, arr);
+  allInvoicesCache = arr;
+  renderInvoiceListUI();
+  populateExpenseInvoiceSelect();
 }
 
 function loadInvoiceIntoForm(noInvoice){
@@ -1937,6 +2054,7 @@ function loadInvoiceIntoForm(noInvoice){
   document.getElementById('metodeBayar').value = inv.metodeBayar || 'Transfer Bank';
   document.getElementById('namaMaskapai').value = inv.namaMaskapai || '';
   document.getElementById('jenisTransport').value = inv.jenisTransport || '';
+  document.getElementById('jenisVisa').value = inv.jenisVisa || '';
   const radio = document.getElementById('produk' + capitalizeWord(inv.produkTipe || 'tour'));
   if(radio) radio.checked = true;
   syncData();
@@ -1944,6 +2062,9 @@ function loadInvoiceIntoForm(noInvoice){
 }
 
 /* ---------------- EXPENSE (PENGELUARAN) RECORDS ---------------- */
+
+let supplierBlockCounter = 0;
+let expenseItemCounter = 0;
 
 function populateExpenseInvoiceSelect(){
   const sel = document.getElementById('expenseInvoiceSelect');
@@ -1954,34 +2075,143 @@ function populateExpenseInvoiceSelect(){
   if(current) sel.value = current;
 }
 
+function escapeAttr(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function renderItemRowHtml(item){
+  expenseItemCounter++;
+  const iid = 'item_' + expenseItemCounter;
+  return `
+    <div class="expense-item-row" data-iid="${iid}">
+      <input type="number" class="item-biaya" min="0" placeholder="Biaya Akomodasi" value="${item && item.biaya ? item.biaya : ''}">
+      <input type="text" class="item-ket" placeholder="Keterangan (dipakai untuk apa)" value="${escapeAttr(item && item.keterangan)}">
+      <button type="button" class="item-remove" onclick="removeExpenseItem('${iid}')" title="Hapus biaya ini">✕</button>
+    </div>`;
+}
+
+function renderSupplierBlockHtml(supplier){
+  supplierBlockCounter++;
+  const sid = 'sup_' + supplierBlockCounter;
+  const items = (supplier && supplier.items && supplier.items.length) ? supplier.items : [{ biaya: '', keterangan: '' }];
+  const itemsHtml = items.map(it => renderItemRowHtml(it)).join('');
+  return `
+    <div class="supplier-block" data-sid="${sid}">
+      <div class="supplier-block-head">
+        <input type="text" class="sup-nama" placeholder="Nama Supplier" value="${escapeAttr(supplier && supplier.namaSupplier)}">
+        <button type="button" class="mini-btn danger" onclick="removeSupplierBlock('${sid}')">🗑 Hapus Supplier</button>
+      </div>
+      <div class="field">
+        <label>Modal (IDR)</label>
+        <input type="number" class="sup-modal" min="0" placeholder="0" value="${supplier && supplier.modal ? supplier.modal : ''}">
+      </div>
+      <div class="sup-items" id="items_${sid}">${itemsHtml}</div>
+      <button type="button" class="mini-btn" onclick="addExpenseItem('${sid}')">+ Tambah Pengeluaran</button>
+    </div>`;
+}
+
+function addSupplierBlock(){
+  const container = document.getElementById('supplierListContainer');
+  container.insertAdjacentHTML('beforeend', renderSupplierBlockHtml({ namaSupplier: '', modal: '', items: [{ biaya: '', keterangan: '' }] }));
+  recalcExpenseSummary();
+}
+
+function removeSupplierBlock(sid){
+  const el = document.querySelector(`.supplier-block[data-sid="${sid}"]`);
+  if(el) el.remove();
+  recalcExpenseSummary();
+}
+
+function addExpenseItem(sid){
+  const itemsContainer = document.getElementById('items_' + sid);
+  if(!itemsContainer) return;
+  itemsContainer.insertAdjacentHTML('beforeend', renderItemRowHtml({ biaya: '', keterangan: '' }));
+  recalcExpenseSummary();
+}
+
+function removeExpenseItem(iid){
+  const el = document.querySelector(`.expense-item-row[data-iid="${iid}"]`);
+  if(el) el.remove();
+  recalcExpenseSummary();
+}
+
+function loadSuppliersIntoForm(suppliers){
+  const container = document.getElementById('supplierListContainer');
+  const list = (suppliers && suppliers.length) ? suppliers : [{ namaSupplier: '', modal: '', items: [{ biaya: '', keterangan: '' }] }];
+  container.innerHTML = list.map(s => renderSupplierBlockHtml(s)).join('');
+}
+
+function collectSuppliersFromForm(){
+  const blocks = document.querySelectorAll('#supplierListContainer .supplier-block');
+  const suppliers = [];
+  blocks.forEach(block => {
+    const namaSupplier = block.querySelector('.sup-nama').value.trim();
+    const modal = Number(block.querySelector('.sup-modal').value) || 0;
+    const items = [];
+    block.querySelectorAll('.expense-item-row').forEach(row => {
+      const biaya = Number(row.querySelector('.item-biaya').value) || 0;
+      const keterangan = row.querySelector('.item-ket').value.trim();
+      if(biaya || keterangan) items.push({ biaya, keterangan });
+    });
+    suppliers.push({ namaSupplier, modal, items });
+  });
+  return suppliers;
+}
+
+function recalcExpenseSummary(){
+  const suppliers = collectSuppliersFromForm();
+  const totalModal = suppliers.reduce((sum, s) => sum + s.modal + s.items.reduce((a, i) => a + i.biaya, 0), 0);
+  const noInv = document.getElementById('expenseInvoiceSelect').value;
+  const inv = allInvoicesCache.find(r => r.noInvoice === noInv);
+  const hargaJual = inv ? inv.subtotal : 0;
+  const margin = hargaJual - totalModal;
+  document.getElementById('expSummaryTotalModal').textContent = fmtRupiah(totalModal);
+  document.getElementById('expSummaryHargaJual').textContent = fmtRupiah(hargaJual);
+  const marginEl = document.getElementById('expSummaryMargin');
+  marginEl.textContent = fmtRupiah(margin);
+  marginEl.style.color = margin >= 0 ? 'var(--teal)' : '#c0392b';
+}
+
 function onExpenseInvoiceChange(){
   const noInv = document.getElementById('expenseInvoiceSelect').value;
   const inv = allInvoicesCache.find(r => r.noInvoice === noInv);
   document.getElementById('expenseClient').value = inv ? inv.namaClient : '';
-  const box = document.getElementById('expenseSummary');
-  if(!inv){
-    box.innerHTML = 'Pilih invoice di sebelah kiri untuk melihat ringkasan harga jual dan estimasi keuntungan.';
-    return;
-  }
-  box.innerHTML = `
-    <div class="meta-row"><span class="k">No Invoice</span><span class="v">${inv.noInvoice}</span></div>
-    <div class="meta-row"><span class="k">Nama Client</span><span class="v">${inv.namaClient}</span></div>
-    <div class="meta-row"><span class="k">Jenis Produk</span><span class="v">${inv.produkLabel}</span></div>
-    <div class="meta-row"><span class="k">Harga Jual (Subtotal)</span><span class="v">${fmtRupiah(inv.subtotal)}</span></div>
-  `;
+  const existing = allExpensesCache.find(r => r.noInvoice === noInv);
+  loadSuppliersIntoForm(existing ? existing.suppliers : null);
+  recalcExpenseSummary();
 }
 
 async function saveExpenseRecord(rec){
   if(firebaseReady){
     try{
-      await db.collection('expenses').doc(rec.id).set(rec);
+      await db.collection('expenses').doc(rec.noInvoice).set(rec);
       return;
     }catch(e){
       console.warn('Gagal menyimpan pengeluaran ke Firestore, fallback ke localStorage.', e);
     }
   }
   const arr = lsGet(LS_KEY_EXPENSES);
-  arr.unshift(rec);
+  const idx = arr.findIndex(r => r.noInvoice === rec.noInvoice);
+  if(idx >= 0) arr[idx] = rec; else arr.unshift(rec);
+  lsSet(LS_KEY_EXPENSES, arr);
+  allExpensesCache = arr;
+  renderExpenseTable();
+}
+
+async function deleteExpenseRecord(noInvoice){
+  if(firebaseReady){
+    try{
+      await db.collection('expenses').doc(noInvoice).delete();
+      return;
+    }catch(e){
+      console.warn('Gagal menghapus pengeluaran di Firestore, fallback ke localStorage.', e);
+    }
+  }
+  const arr = lsGet(LS_KEY_EXPENSES).filter(r => r.noInvoice !== noInvoice);
   lsSet(LS_KEY_EXPENSES, arr);
   allExpensesCache = arr;
   renderExpenseTable();
@@ -1989,7 +2219,7 @@ async function saveExpenseRecord(rec){
 
 function subscribeExpenses(cb){
   if(firebaseReady){
-    db.collection('expenses').orderBy('createdAt', 'desc').onSnapshot(
+    db.collection('expenses').orderBy('updatedAt', 'desc').onSnapshot(
       snap => cb(snap.docs.map(d => d.data())),
       err => { console.warn(err); cb(lsGet(LS_KEY_EXPENSES)); }
     );
@@ -2002,24 +2232,18 @@ function renderExpenseTable(){
   const tbody = document.getElementById('expenseTableBody');
   if(!tbody) return;
   if(!allExpensesCache.length){
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Belum ada data pengeluaran.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Belum ada data pengeluaran.</td></tr>';
     return;
   }
   tbody.innerHTML = allExpensesCache.map(e => {
-    const totalModal = (Number(e.modal)||0) + (Number(e.biayaAkomodasi)||0) + (Number(e.biayaLainnya)||0);
-    const untung = (Number(e.hargaJual)||0) - totalModal;
-    const untungColor = untung >= 0 ? 'var(--teal)' : '#c0392b';
-    return `<tr>
+    const marginColor = (e.margin || 0) >= 0 ? 'var(--teal)' : '#c0392b';
+    return `<tr class="clickable-row" onclick="openExpensePreview('${e.noInvoice}')">
       <td><b>${e.noInvoice}</b></td>
       <td>${e.namaClient}</td>
-      <td>${e.namaSupplier}</td>
-      <td style="text-align:right;">${fmtRupiah(e.modal)}</td>
-      <td style="text-align:right;">${fmtRupiah(e.margin)}</td>
-      <td style="text-align:right;">${fmtRupiah(e.biayaAkomodasi)}</td>
-      <td style="text-align:right;">${fmtRupiah(e.biayaLainnya)}</td>
-      <td style="text-align:right; font-weight:bold;">${fmtRupiah(totalModal)}</td>
+      <td style="text-align:center;">${(e.suppliers || []).length}</td>
+      <td style="text-align:right;">${fmtRupiah(e.totalModal)}</td>
       <td style="text-align:right;">${fmtRupiah(e.hargaJual)}</td>
-      <td style="text-align:right; font-weight:bold; color:${untungColor};">${fmtRupiah(untung)}</td>
+      <td style="text-align:right; font-weight:bold; color:${marginColor};">${fmtRupiah(e.margin)}</td>
     </tr>`;
   }).join('');
 }
@@ -2031,24 +2255,75 @@ async function saveExpenseEntry(){
     return;
   }
   const inv = allInvoicesCache.find(r => r.noInvoice === noInv);
+  const suppliers = collectSuppliersFromForm().filter(s => s.namaSupplier || s.modal || s.items.length);
+  if(!suppliers.length){
+    alert('Tambahkan minimal 1 data supplier (nama atau modal).');
+    return;
+  }
+  const totalModal = suppliers.reduce((sum, s) => sum + s.modal + s.items.reduce((a, i) => a + i.biaya, 0), 0);
+  const hargaJual = inv ? inv.subtotal : 0;
+  const margin = hargaJual - totalModal;
+  const existing = allExpensesCache.find(r => r.noInvoice === noInv);
   const rec = {
-    id: noInv + '-' + Date.now(),
     noInvoice: noInv,
     namaClient: inv ? inv.namaClient : '-',
-    namaSupplier: document.getElementById('expenseSupplier').value || '-',
-    modal: Number(document.getElementById('expenseModal').value) || 0,
-    margin: Number(document.getElementById('expenseMargin').value) || 0,
-    biayaAkomodasi: Number(document.getElementById('expenseAkomodasi').value) || 0,
-    biayaLainnya: Number(document.getElementById('expenseLainnya').value) || 0,
-    hargaJual: inv ? inv.subtotal : 0,
-    createdAt: Date.now()
+    hargaJual,
+    suppliers,
+    totalModal,
+    margin,
+    createdAt: existing ? existing.createdAt : Date.now(),
+    updatedAt: Date.now()
   };
   await saveExpenseRecord(rec);
-  document.getElementById('expenseSupplier').value = '';
-  document.getElementById('expenseModal').value = '';
-  document.getElementById('expenseMargin').value = '';
-  document.getElementById('expenseAkomodasi').value = '';
-  document.getElementById('expenseLainnya').value = '';
+  alert(`Pengeluaran untuk invoice ${noInv} berhasil disimpan.`);
+}
+
+function openExpensePreview(noInvoice){
+  const rec = allExpensesCache.find(r => r.noInvoice === noInvoice);
+  if(!rec) return;
+  currentExpensePreviewId = noInvoice;
+  document.getElementById('em-noInvoice').textContent = rec.noInvoice;
+  document.getElementById('em-client').textContent = rec.namaClient;
+  document.getElementById('em-hargaJual').textContent = fmtRupiah(rec.hargaJual);
+  document.getElementById('em-totalModal').textContent = fmtRupiah(rec.totalModal);
+  const marginEl = document.getElementById('em-margin');
+  marginEl.textContent = fmtRupiah(rec.margin);
+  marginEl.style.color = (rec.margin || 0) >= 0 ? 'var(--teal)' : '#c0392b';
+  const listEl = document.getElementById('em-supplierList');
+  listEl.innerHTML = (rec.suppliers || []).map(s => `
+    <div class="supplier-preview-block">
+      <div class="supplier-preview-head">
+        <span>${s.namaSupplier || '(tanpa nama)'}</span>
+        <span>${fmtRupiah(s.modal)}</span>
+      </div>
+      ${(s.items || []).length ? s.items.map(it => `
+        <div class="supplier-preview-item">
+          <span>${it.keterangan || '(tanpa keterangan)'}</span>
+          <span>${fmtRupiah(it.biaya)}</span>
+        </div>
+      `).join('') : '<div class="supplier-preview-item muted">Tidak ada biaya tambahan</div>'}
+    </div>
+  `).join('') || '<p style="color:var(--muted); font-size:13px;">Tidak ada data supplier.</p>';
+  document.getElementById('expenseModalOverlay').style.display = 'flex';
+}
+
+function closeExpensePreview(){
+  document.getElementById('expenseModalOverlay').style.display = 'none';
+  currentExpensePreviewId = null;
+}
+
+function editExpenseFromPreview(){
+  const noInv = currentExpensePreviewId;
+  closeExpensePreview();
+  showSection('expense');
+  document.getElementById('expenseInvoiceSelect').value = noInv;
+  onExpenseInvoiceChange();
+}
+
+async function deleteExpenseFromPreview(){
+  if(!confirm('Hapus seluruh data pengeluaran untuk invoice ini?')) return;
+  await deleteExpenseRecord(currentExpensePreviewId);
+  closeExpensePreview();
 }
 
 /* ---------------- REQUEST FORM & REQUEST LIST ---------------- */
@@ -2056,6 +2331,8 @@ async function saveExpenseEntry(){
 const LS_KEY_REQUESTS = 'dutaloka_requests';
 let requestsCache = [];
 let currentPreviewId = null;
+let editingRequestId = null;
+let currentExpensePreviewId = null;
 
 async function saveRequestRecord(rec){
   if(firebaseReady){
@@ -2124,8 +2401,10 @@ async function submitRequestForm(){
     return;
   }
   const produkTipe = (document.querySelector('input[name="reqProdukTipe"]:checked') || {}).value || 'tour';
+  const isEditing = !!editingRequestId;
+  const existing = isEditing ? requestsCache.find(r => r.noRequest === editingRequestId) : null;
   const rec = {
-    noRequest: generateReqNo(),
+    noRequest: isEditing ? editingRequestId : generateReqNo(),
     tglRequest: document.getElementById('reqTglRequest').value,
     namaClient: client,
     produkTipe: produkTipe,
@@ -2138,10 +2417,11 @@ async function submitRequestForm(){
     namaSales: document.getElementById('reqNamaSales').value.trim() || '-',
     statusPenawaran: document.getElementById('reqStatusPenawaran').value,
     responClient: document.getElementById('reqResponClient').value.trim(),
-    statusRequest: 'Pending',
-    createdAt: Date.now()
+    statusRequest: existing ? existing.statusRequest : 'Pending',
+    createdAt: existing ? existing.createdAt : Date.now()
   };
   await saveRequestRecord(rec);
+  cancelEditRequest();
 
   // reset form untuk entry berikutnya
   document.getElementById('reqNamaClient').value = '';
@@ -2157,9 +2437,61 @@ async function submitRequestForm(){
   document.getElementById('reqTglRequest').valueAsDate = new Date();
 
   const msgEl = document.getElementById('reqSaveMsg');
-  msgEl.textContent = `✓ Request ${rec.noRequest} tersimpan dan masuk ke Request List.`;
+  msgEl.textContent = isEditing
+    ? `✓ Request ${rec.noRequest} berhasil diperbarui.`
+    : `✓ Request ${rec.noRequest} tersimpan dan masuk ke Request List.`;
   msgEl.style.display = 'block';
   setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+}
+
+function editRequestEntry(noRequest){
+  const rec = requestsCache.find(r => r.noRequest === noRequest);
+  if(!rec) return;
+  editingRequestId = noRequest;
+  document.getElementById('reqTglRequest').value = rec.tglRequest || '';
+  document.getElementById('reqNamaClient').value = (rec.namaClient === '-') ? '' : (rec.namaClient || '');
+  document.getElementById('reqNegaraTujuan').value = rec.negaraTujuan || '';
+  document.getElementById('reqKotaTujuan').value = rec.kotaTujuan || '';
+  document.getElementById('reqJumlahPax').value = (rec.jumlahPax === '-') ? '' : (rec.jumlahPax || '');
+  document.getElementById('reqTglBerangkat').value = rec.tglBerangkat || '';
+  document.getElementById('reqTglPulang').value = rec.tglPulang || '';
+  document.getElementById('reqNamaSales').value = (rec.namaSales === '-') ? '' : (rec.namaSales || '');
+  document.getElementById('reqStatusPenawaran').value = rec.statusPenawaran || 'Belum Dikirim';
+  document.getElementById('reqResponClient').value = rec.responClient || '';
+  const radio = document.getElementById('reqProduk' + capitalizeWord(rec.produkTipe || 'tour'));
+  if(radio) radio.checked = true;
+
+  const banner = document.getElementById('reqEditBanner');
+  document.getElementById('reqEditingLabel').textContent = noRequest;
+  banner.style.display = 'block';
+
+  showSection('request-form');
+}
+
+function cancelEditRequest(){
+  editingRequestId = null;
+  document.getElementById('reqEditBanner').style.display = 'none';
+}
+
+async function deleteRequestEntry(noRequest){
+  if(!confirm(`Hapus request ${noRequest}? Tindakan ini tidak bisa dibatalkan.`)) return;
+  if(firebaseReady){
+    try{
+      await db.collection('requests').doc(noRequest).delete();
+    }catch(e){
+      console.warn('Gagal menghapus request di Firestore, fallback ke localStorage.', e);
+      const arr = lsGet(LS_KEY_REQUESTS).filter(r => r.noRequest !== noRequest);
+      lsSet(LS_KEY_REQUESTS, arr);
+      requestsCache = arr;
+      renderRequestListUI();
+    }
+  } else {
+    const arr = lsGet(LS_KEY_REQUESTS).filter(r => r.noRequest !== noRequest);
+    lsSet(LS_KEY_REQUESTS, arr);
+    requestsCache = arr;
+    renderRequestListUI();
+  }
+  if(editingRequestId === noRequest) cancelEditRequest();
 }
 
 function renderRequestListUI(){
@@ -2172,7 +2504,7 @@ function renderRequestListUI(){
   const tbody = document.getElementById('requestListBody');
   if(!tbody) return;
   if(!filtered.length){
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Belum ada request yang tersimpan.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Belum ada request yang tersimpan.</td></tr>';
     return;
   }
   tbody.innerHTML = filtered.map(rec => `
@@ -2187,6 +2519,10 @@ function renderRequestListUI(){
       <td>${rec.namaSales}</td>
       <td>${rec.statusPenawaran || '-'}</td>
       <td>${statusBadge(rec.statusRequest)}</td>
+      <td class="row-actions" onclick="event.stopPropagation();">
+        <button class="mini-btn" onclick="editRequestEntry('${rec.noRequest}')">✎ Edit</button>
+        <button class="mini-btn danger" onclick="deleteRequestEntry('${rec.noRequest}')">🗑 Hapus</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -2256,8 +2592,18 @@ function showSection(section){
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
   if(section === 'request-list') renderRequestListUI();
   if(section === 'list') renderInvoiceListUI();
-  if(section === 'expense'){ populateExpenseInvoiceSelect(); renderExpenseTable(); }
+  if(section === 'expense'){
+    populateExpenseInvoiceSelect();
+    renderExpenseTable();
+    if(!document.querySelector('#supplierListContainer .supplier-block')){
+      loadSuppliersIntoForm(null);
+      recalcExpenseSummary();
+    }
+  }
 }
+
+// live update Total Modal & Margin setiap kali user mengetik di form supplier
+document.getElementById('supplierListContainer').addEventListener('input', recalcExpenseSummary);
 
 // subscribe to live data
 // subscribeInvoices, subscribeExpenses & subscribeRequests kini dipanggil otomatis
