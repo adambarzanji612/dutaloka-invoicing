@@ -283,6 +283,41 @@
   }
   .supplier-preview-item.muted{ font-style:italic; }
 
+  /* ---------- TIKET / TRANSPORT ITEM BLOCKS (Invoice form) ---------- */
+  .item-block{
+    border:1px solid var(--line);
+    border-left:3px solid var(--teal);
+    border-radius:4px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    background:#fffefc;
+  }
+  .item-block .item-block-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .item-block label.mini-label{
+    display:block; font-size:10.5px; color:var(--muted); margin-bottom:3px; letter-spacing:0.3px;
+  }
+  .item-block input{
+    padding:8px 9px; border:1px solid var(--line); border-radius:3px;
+    font-family:'Georgia', serif; font-size:13px; background:#fffefb; width:100%;
+  }
+  .item-block .item-block-foot{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--muted); margin-top:8px; padding-top:8px;
+    border-top:1px dashed var(--line);
+  }
+  .item-block .item-total{ font-weight:bold; color:var(--navy-deep); }
+  .item-block .item-remove-btn{
+    border:1px solid #b03030; color:#b03030; background:#fff;
+    border-radius:3px; padding:4px 10px; font-size:11px; cursor:pointer;
+    font-family:'Georgia', serif;
+  }
+  .item-block .item-remove-btn:hover{ background:#b03030; color:#fff; }
+
   /* toggle switch for "receipt terkirim" */
   .switch{ position:relative; display:inline-block; width:40px; height:22px; }
   .switch input{ opacity:0; width:0; height:0; }
@@ -783,6 +818,7 @@
     .card{ padding:18px; }
     .card h2{ font-size:12px; }
     .row2{ grid-template-columns:1fr; gap:0; }
+    .item-block .item-block-row{ grid-template-columns:1fr; gap:8px; }
     .field input, .field select, .field textarea{
       font-size:16px; /* prevents iOS auto-zoom on focus */
       padding:11px 10px;
@@ -1217,18 +1253,16 @@
         </div>
       </div>
 
-      <div class="row2" id="field-maskapai" style="display:none;">
-        <div class="field" style="grid-column: 1 / -1;">
-          <label>Nama Maskapai</label>
-          <input type="text" id="namaMaskapai" placeholder="Contoh: Garuda Indonesia">
-        </div>
+      <div id="field-tiket-items" style="display:none; margin-bottom:16px;">
+        <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:0.4px;">Detail Tiket</label>
+        <div id="tiketItemsContainer"></div>
+        <button type="button" class="mini-btn" onclick="addTiketItem()">+ Tambah Tiket</button>
       </div>
 
-      <div class="row2" id="field-transport" style="display:none;">
-        <div class="field" style="grid-column: 1 / -1;">
-          <label>Jenis Transport</label>
-          <input type="text" id="jenisTransport" placeholder="Contoh: Bus Pariwisata, Rental Mobil">
-        </div>
+      <div id="field-transport-items" style="display:none; margin-bottom:16px;">
+        <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:0.4px;">Detail Transport</label>
+        <div id="transportItemsContainer"></div>
+        <button type="button" class="mini-btn" onclick="addTransportItem()">+ Tambah Transport</button>
       </div>
 
       <h2>Data Pemesanan</h2>
@@ -1249,7 +1283,7 @@
         <input type="text" id="namaClient" placeholder="Nama lengkap client">
       </div>
 
-      <div class="row2">
+      <div class="row2" id="globalDestinasiFields">
         <div class="field">
           <label>Negara Tujuan</label>
           <input type="text" id="negaraTujuan" placeholder="Contoh: Jepang">
@@ -1260,25 +1294,27 @@
         </div>
       </div>
 
-      <div class="row2">
-        <div class="field">
-          <label>Jumlah Pax</label>
-          <input type="number" id="jumlahPax" min="1" placeholder="Contoh: 4">
+      <div id="universalTourVisaFields">
+        <div class="row2">
+          <div class="field">
+            <label>Jumlah Pax</label>
+            <input type="number" id="jumlahPax" min="1" placeholder="Contoh: 4">
+          </div>
+          <div class="field">
+            <label>Harga Satuan (IDR)</label>
+            <input type="number" id="harga" min="0" placeholder="Contoh: 2500000 (per pax)">
+          </div>
         </div>
-        <div class="field">
-          <label>Harga Satuan (IDR)</label>
-          <input type="number" id="harga" min="0" placeholder="Contoh: 2500000 (per pax)">
-        </div>
-      </div>
 
-      <div class="row2">
-        <div class="field">
-          <label>Tanggal Keberangkatan</label>
-          <input type="date" id="tglBerangkat">
-        </div>
-        <div class="field">
-          <label>Tanggal Kepulangan</label>
-          <input type="date" id="tglPulang">
+        <div class="row2">
+          <div class="field">
+            <label>Tanggal Keberangkatan</label>
+            <input type="date" id="tglBerangkat">
+          </div>
+          <div class="field">
+            <label>Tanggal Kepulangan</label>
+            <input type="date" id="tglPulang">
+          </div>
         </div>
       </div>
 
@@ -1362,7 +1398,7 @@
               <td class="unit-col">—</td>
               <td>—</td>
             </tr>
-            <tr>
+            <tr id="inv-row-produkLine">
               <td id="inv-produkLine">Paket Tour</td>
               <td id="inv-produkKeterangan">Sesuai kesepakatan</td>
               <td class="qty-col" id="inv-qty">-</td>
@@ -1370,6 +1406,7 @@
               <td id="inv-harga">Rp 0</td>
             </tr>
           </tbody>
+          <tbody id="inv-items-body"></tbody>
         </table>
 
         <div class="bank-info">
@@ -1635,10 +1672,194 @@ const produkLabels = {
   tiket: 'Tiket Pesawat'
 };
 
+let tiketItemCounter = 0;
+let transportItemCounter = 0;
+
 function toggleExtraFields(produkTipe){
   document.getElementById('field-visa').style.display = (produkTipe === 'visa') ? 'grid' : 'none';
-  document.getElementById('field-maskapai').style.display = (produkTipe === 'tiket') ? 'grid' : 'none';
-  document.getElementById('field-transport').style.display = (produkTipe === 'transport') ? 'grid' : 'none';
+  document.getElementById('field-tiket-items').style.display = (produkTipe === 'tiket') ? 'block' : 'none';
+  document.getElementById('field-transport-items').style.display = (produkTipe === 'transport') ? 'block' : 'none';
+  document.getElementById('universalTourVisaFields').style.display = (produkTipe === 'tour' || produkTipe === 'visa') ? 'block' : 'none';
+  document.getElementById('globalDestinasiFields').style.display = (produkTipe === 'tiket' || produkTipe === 'transport') ? 'none' : 'grid';
+  if(produkTipe === 'tiket' && !document.querySelector('#tiketItemsContainer .item-block')) addTiketItem();
+  if(produkTipe === 'transport' && !document.querySelector('#transportItemsContainer .item-block')) addTransportItem();
+}
+
+/* ---------------- TIKET ITEMS ---------------- */
+function renderTiketItemHtml(item){
+  tiketItemCounter++;
+  const iid = 'tkt_' + tiketItemCounter;
+  const it = item || {};
+  return `
+    <div class="item-block" data-iid="${iid}">
+      <div class="item-block-row">
+        <div><label class="mini-label">Negara Tujuan</label><input type="text" class="tkt-negara" placeholder="Contoh: Jepang" value="${(it.negara||'').replace(/"/g,'&quot;')}"></div>
+        <div><label class="mini-label">Kota Tujuan</label><input type="text" class="tkt-kota" placeholder="Contoh: Tokyo" value="${(it.kota||'').replace(/"/g,'&quot;')}"></div>
+      </div>
+      <div class="item-block-row">
+        <div><label class="mini-label">Tanggal Departure</label><input type="date" class="tkt-departure" value="${it.departure || ''}"></div>
+        <div><label class="mini-label">Tanggal Arrival</label><input type="date" class="tkt-arrival" value="${it.arrival || ''}"></div>
+      </div>
+      <div class="item-block-row">
+        <div><label class="mini-label">Maskapai</label><input type="text" class="tkt-maskapai" placeholder="Contoh: Garuda Indonesia" value="${(it.maskapai||'').replace(/"/g,'&quot;')}"></div>
+        <div><label class="mini-label">Jumlah Pax</label><input type="number" min="1" class="tkt-pax" placeholder="Contoh: 2" value="${it.pax || ''}"></div>
+      </div>
+      <div class="item-block-row" style="grid-template-columns: 1fr;">
+        <div><label class="mini-label">Harga Satuan (IDR)</label><input type="number" min="0" class="tkt-harga" placeholder="Contoh: 2500000" value="${it.harga || ''}"></div>
+      </div>
+      <div class="item-block-foot">
+        <span>Total: <span class="item-total tkt-total">Rp 0</span></span>
+        <button type="button" class="item-remove-btn" onclick="removeTiketItem('${iid}')">✕ Hapus</button>
+      </div>
+    </div>`;
+}
+
+function addTiketItem(item){
+  document.getElementById('tiketItemsContainer').insertAdjacentHTML('beforeend', renderTiketItemHtml(item));
+  syncData();
+}
+
+function removeTiketItem(iid){
+  const el = document.querySelector(`#tiketItemsContainer .item-block[data-iid="${iid}"]`);
+  if(el) el.remove();
+  syncData();
+}
+
+function collectTiketItems(){
+  const blocks = document.querySelectorAll('#tiketItemsContainer .item-block');
+  const items = [];
+  blocks.forEach(block => {
+    const negara = block.querySelector('.tkt-negara').value.trim();
+    const kota = block.querySelector('.tkt-kota').value.trim();
+    const departure = block.querySelector('.tkt-departure').value;
+    const arrival = block.querySelector('.tkt-arrival').value;
+    const maskapai = block.querySelector('.tkt-maskapai').value.trim();
+    const pax = Number(block.querySelector('.tkt-pax').value) || 0;
+    const harga = Number(block.querySelector('.tkt-harga').value) || 0;
+    const total = pax * harga;
+    block.querySelector('.tkt-total').textContent = fmtRupiah(total);
+    const destParts = [];
+    if(kota) destParts.push(kota);
+    if(negara) destParts.push(negara);
+    const destinasi = destParts.length ? destParts.join(', ') : '-';
+    items.push({ negara, kota, destinasi, departure, arrival, maskapai, pax, harga, total });
+  });
+  return items;
+}
+
+/* ---------------- TRANSPORT ITEMS ---------------- */
+function renderTransportItemHtml(item){
+  transportItemCounter++;
+  const iid = 'trp_' + transportItemCounter;
+  const it = item || {};
+  return `
+    <div class="item-block" data-iid="${iid}">
+      <div class="item-block-row">
+        <div><label class="mini-label">Negara Tujuan</label><input type="text" class="trp-negara" placeholder="Contoh: Jepang" value="${(it.negara||'').replace(/"/g,'&quot;')}"></div>
+        <div><label class="mini-label">Kota Tujuan</label><input type="text" class="trp-kota" placeholder="Contoh: Tokyo" value="${(it.kota||'').replace(/"/g,'&quot;')}"></div>
+      </div>
+      <div class="item-block-row">
+        <div><label class="mini-label">Tanggal Keberangkatan</label><input type="date" class="trp-berangkat" value="${it.berangkat || ''}"></div>
+        <div><label class="mini-label">Tanggal Kepulangan</label><input type="date" class="trp-pulang" value="${it.pulang || ''}"></div>
+      </div>
+      <div class="item-block-row">
+        <div><label class="mini-label">Jenis Transport</label><input type="text" class="trp-jenis" placeholder="Contoh: Bus Pariwisata" value="${(it.jenis||'').replace(/"/g,'&quot;')}"></div>
+        <div><label class="mini-label">Jumlah Unit</label><input type="number" min="1" class="trp-unit" placeholder="Contoh: 2" value="${it.unit || ''}"></div>
+      </div>
+      <div class="item-block-row" style="grid-template-columns: 1fr;">
+        <div><label class="mini-label">Harga Satuan (IDR)</label><input type="number" min="0" class="trp-harga" placeholder="Contoh: 1500000" value="${it.harga || ''}"></div>
+      </div>
+      <div class="item-block-foot">
+        <span>Total: <span class="item-total trp-total">Rp 0</span></span>
+        <button type="button" class="item-remove-btn" onclick="removeTransportItem('${iid}')">✕ Hapus</button>
+      </div>
+    </div>`;
+}
+
+function addTransportItem(item){
+  document.getElementById('transportItemsContainer').insertAdjacentHTML('beforeend', renderTransportItemHtml(item));
+  syncData();
+}
+
+function removeTransportItem(iid){
+  const el = document.querySelector(`#transportItemsContainer .item-block[data-iid="${iid}"]`);
+  if(el) el.remove();
+  syncData();
+}
+
+function collectTransportItems(){
+  const blocks = document.querySelectorAll('#transportItemsContainer .item-block');
+  const items = [];
+  blocks.forEach(block => {
+    const negara = block.querySelector('.trp-negara').value.trim();
+    const kota = block.querySelector('.trp-kota').value.trim();
+    const berangkat = block.querySelector('.trp-berangkat').value;
+    const pulang = block.querySelector('.trp-pulang').value;
+    const jenis = block.querySelector('.trp-jenis').value.trim();
+    const unit = Number(block.querySelector('.trp-unit').value) || 0;
+    const harga = Number(block.querySelector('.trp-harga').value) || 0;
+    const total = unit * harga;
+    block.querySelector('.trp-total').textContent = fmtRupiah(total);
+    const destParts = [];
+    if(kota) destParts.push(kota);
+    if(negara) destParts.push(negara);
+    const destinasi = destParts.length ? destParts.join(', ') : '-';
+    items.push({ negara, kota, destinasi, berangkat, pulang, jenis, unit, harga, total });
+  });
+  return items;
+}
+
+function loadTiketItemsIntoForm(items){
+  const container = document.getElementById('tiketItemsContainer');
+  container.innerHTML = '';
+  (items && items.length ? items : [{}]).forEach(it => {
+    container.insertAdjacentHTML('beforeend', renderTiketItemHtml(it));
+  });
+}
+
+function loadTransportItemsIntoForm(items){
+  const container = document.getElementById('transportItemsContainer');
+  container.innerHTML = '';
+  (items && items.length ? items : [{}]).forEach(it => {
+    container.insertAdjacentHTML('beforeend', renderTransportItemHtml(it));
+  });
+}
+
+/* ---------------- RENDER BARIS ITEM DI PREVIEW INVOICE ---------------- */
+function renderInvoiceItemRows(produkTipe, tiketItems, transportItems){
+  const itemsBody = document.getElementById('inv-items-body');
+  const staticRow = document.getElementById('inv-row-produkLine');
+
+  if(produkTipe === 'tiket'){
+    staticRow.style.display = 'none';
+    itemsBody.innerHTML = tiketItems.map(it => {
+      const desk = `Tiket Pesawat (${it.destinasi})`;
+      const ket = `${it.maskapai || '-'} — Berangkat ${fmtDate(it.departure)} / Tiba ${fmtDate(it.arrival)}`;
+      return `<tr>
+        <td>${desk}</td>
+        <td>${ket}</td>
+        <td class="qty-col">${it.pax || 0}</td>
+        <td class="unit-col">${fmtRupiah(it.harga)}</td>
+        <td>${fmtRupiah(it.total)}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Belum ada detail tiket</td></tr>';
+  } else if(produkTipe === 'transport'){
+    staticRow.style.display = 'none';
+    itemsBody.innerHTML = transportItems.map(it => {
+      const desk = `Jasa Transport (${it.destinasi})`;
+      const ket = `${it.jenis || '-'} — ${fmtDate(it.berangkat)} s/d ${fmtDate(it.pulang)}`;
+      return `<tr>
+        <td>${desk}</td>
+        <td>${ket}</td>
+        <td class="qty-col">${it.unit || 0}</td>
+        <td class="unit-col">${fmtRupiah(it.harga)}</td>
+        <td>${fmtRupiah(it.total)}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Belum ada detail transport</td></tr>';
+  } else {
+    staticRow.style.display = 'table-row';
+    itemsBody.innerHTML = '';
+  }
 }
 
 function syncData(){
@@ -1655,12 +1876,13 @@ function syncData(){
   const sales = document.getElementById('namaSales').value || '-';
   const metode = document.getElementById('metodeBayar').value;
   const jenisVisa = document.getElementById('jenisVisa').value.trim();
-  const maskapai = document.getElementById('namaMaskapai').value.trim();
-  const jenisTransport = document.getElementById('jenisTransport').value.trim();
 
   const produkTipe = (document.querySelector('input[name="produkTipe"]:checked') || {}).value || 'tour';
   const produkLabel = produkLabels[produkTipe];
   toggleExtraFields(produkTipe);
+
+  const tiketItems = collectTiketItems();
+  const transportItems = collectTransportItems();
 
   let noInv = document.getElementById('noInvoice').value.trim();
   if(!noInv){
@@ -1676,7 +1898,25 @@ function syncData(){
   const negaraDisplay = negaraRaw || '-';
 
   const periode = (berangkat && pulang) ? `${fmtDate(berangkat)} — ${fmtDate(pulang)}` : '-';
-  const subtotal = hargaSatuan * paxNum;
+
+  // Subtotal: Tour/Visa = harga satuan x pax. Tiket/Transport = jumlah total dari setiap item.
+  let subtotal = hargaSatuan * paxNum;
+  let totalQty = paxNum;
+  if(produkTipe === 'tiket'){
+    subtotal = tiketItems.reduce((s, it) => s + it.total, 0);
+    totalQty = tiketItems.reduce((s, it) => s + it.pax, 0);
+  } else if(produkTipe === 'transport'){
+    subtotal = transportItems.reduce((s, it) => s + it.total, 0);
+    totalQty = transportItems.reduce((s, it) => s + it.unit, 0);
+  }
+
+  // Destinasi gabungan untuk Tiket/Transport, diambil dari destinasi tiap item (tanpa duplikat)
+  let itemsDestinasi = '-';
+  if(produkTipe === 'tiket' || produkTipe === 'transport'){
+    const srcItems = produkTipe === 'tiket' ? tiketItems : transportItems;
+    const uniqueDest = [...new Set(srcItems.map(it => it.destinasi).filter(d => d && d !== '-'))];
+    itemsDestinasi = uniqueDest.length ? uniqueDest.join(' / ') : '-';
+  }
 
   // Deskripsi layanan & keterangan per jenis produk (khusus invoice) — konsisten di semua produk
   let produkLineText = produkLabel;
@@ -1687,13 +1927,9 @@ function syncData(){
   } else if(produkTipe === 'visa'){
     produkLineText = produkLabel;
     produkKeterangan = jenisVisa ? `${jenisVisa} — ${negaraDisplay}` : negaraDisplay;
-  } else if(produkTipe === 'transport'){
-    produkLineText = produkLabel;
-    produkKeterangan = jenisTransport || '-';
-  } else if(produkTipe === 'tiket'){
-    produkLineText = produkLabel;
-    produkKeterangan = maskapai || '-';
   }
+
+  renderInvoiceItemRows(produkTipe, tiketItems, transportItems);
 
   // Invoice
   document.getElementById('inv-no').textContent = 'No: ' + noInv;
@@ -1703,9 +1939,9 @@ function syncData(){
   document.getElementById('inv-produk').textContent = produkLabel;
   document.getElementById('inv-pax').textContent = pax + ' orang';
   document.getElementById('inv-destinasi').textContent = destinasi;
-  document.getElementById('inv-row-destinasi').style.display = (produkTipe === 'visa') ? 'none' : 'table-row';
+  document.getElementById('inv-row-destinasi').style.display = (produkTipe === 'visa' || produkTipe === 'tiket' || produkTipe === 'transport') ? 'none' : 'table-row';
   document.getElementById('inv-pulang').textContent = fmtDate(pulang);
-  document.getElementById('inv-row-pulang').style.display = pulang ? 'table-row' : 'none';
+  document.getElementById('inv-row-pulang').style.display = (pulang && (produkTipe === 'tour' || produkTipe === 'visa')) ? 'table-row' : 'none';
   document.getElementById('inv-produkLine').textContent = produkLineText;
   document.getElementById('inv-produkKeterangan').textContent = produkKeterangan;
   document.getElementById('inv-qty').textContent = pax;
@@ -1714,8 +1950,10 @@ function syncData(){
   document.getElementById('inv-subtotal').textContent = fmtRupiah(subtotal);
   document.getElementById('inv-total').textContent = fmtRupiah(subtotal);
 
-  // Receipt — untuk Visa, keterangan cukup negara tujuan (sudah diwakili produkKeterangan)
-  const recKeterangan = (produkTipe === 'visa') ? produkKeterangan : destinasi;
+  // Receipt — untuk Visa, keterangan cukup negara tujuan; untuk Tiket/Transport, gabungan destinasi tiap item
+  let recKeterangan = destinasi;
+  if(produkTipe === 'visa') recKeterangan = produkKeterangan;
+  else if(produkTipe === 'tiket' || produkTipe === 'transport') recKeterangan = itemsDestinasi;
   document.getElementById('rec-no').textContent = 'No: ' + noInv;
   document.getElementById('rec-tglRequest').textContent = fmtDate(tglRequest);
   document.getElementById('rec-sales').textContent = sales;
@@ -1724,7 +1962,7 @@ function syncData(){
   document.getElementById('rec-metode').textContent = metode;
   document.getElementById('rec-produkLine').textContent = `Pembayaran ${produkLabel}`;
   document.getElementById('rec-destinasi').textContent = recKeterangan;
-  document.getElementById('rec-qty').textContent = pax;
+  document.getElementById('rec-qty').textContent = totalQty;
   document.getElementById('rec-harga').textContent = fmtRupiah(subtotal);
   document.getElementById('rec-periode').textContent = periode;
   document.getElementById('rec-pax').textContent = pax + ' orang';
@@ -1741,7 +1979,8 @@ function syncData(){
     tglBerangkat: berangkat, tglPulang: pulang,
     hargaSatuan: hargaSatuan, subtotal: subtotal,
     namaSales: sales, metodeBayar: metode,
-    namaMaskapai: maskapai, jenisTransport: jenisTransport, jenisVisa: jenisVisa
+    jenisVisa: jenisVisa,
+    tiketItems: tiketItems, transportItems: transportItems
   };
 }
 
@@ -2053,9 +2292,9 @@ function loadInvoiceIntoForm(noInvoice){
   document.getElementById('harga').value = inv.hargaSatuan || '';
   document.getElementById('namaSales').value = (inv.namaSales === '-') ? '' : (inv.namaSales || '');
   document.getElementById('metodeBayar').value = inv.metodeBayar || 'Transfer Bank';
-  document.getElementById('namaMaskapai').value = inv.namaMaskapai || '';
-  document.getElementById('jenisTransport').value = inv.jenisTransport || '';
   document.getElementById('jenisVisa').value = inv.jenisVisa || '';
+  loadTiketItemsIntoForm((inv.tiketItems || []).map(it => ({ negara: it.negara, kota: it.kota, departure: it.departure, arrival: it.arrival, maskapai: it.maskapai, pax: it.pax, harga: it.harga })));
+  loadTransportItemsIntoForm((inv.transportItems || []).map(it => ({ negara: it.negara, kota: it.kota, berangkat: it.berangkat, pulang: it.pulang, jenis: it.jenis, unit: it.unit, harga: it.harga })));
   const radio = document.getElementById('produk' + capitalizeWord(inv.produkTipe || 'tour'));
   if(radio) radio.checked = true;
   syncData();
